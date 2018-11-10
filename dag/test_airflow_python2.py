@@ -110,12 +110,16 @@ o8 = PythonOperator(
     dag=dag)
 
 
+# set directed streams from 1 to 2,3,4,5
 o1.set_downstream([o2, o3, o4, o5])
 
+# set directed streams from 2,3,4 to 6
 o6.set_upstream([o2, o3, o4])
 
+# set stream from 2 to 7
 o7.set_upstream(o2)
 
+# set stream from 5,6,7 to 8
 o8.set_upstream([o7, o6, o5])
 
 

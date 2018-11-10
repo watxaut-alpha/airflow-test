@@ -102,3 +102,11 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+
+# user defined ignores
+# Idea environment
+.idea/
+
+# pwds from secret
+.config/secret.py

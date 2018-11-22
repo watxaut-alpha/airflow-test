@@ -40,3 +40,13 @@ More information in Airflow's web page: https://airflow.apache.org
 ## About the code
 
 An important thing to notice is that passwords are stored under config/secret.py so you will have to create your own to be able to run the code.
+
+## Screenshots
+
+![Airflow Dashboard](https://github.com/watxaut-alpha/airflow-test/blob/master/screenshots/capture1.png)
+
+![DAG workflow graph](https://github.com/watxaut-alpha/airflow-test/blob/master/screenshots/capture2.png)
+
+![Run Gant View](https://github.com/watxaut-alpha/airflow-test/blob/master/screenshots/capture3.png)
+
+![Run task duration history](https://github.com/watxaut-alpha/airflow-test/blob/master/screenshots/capture4.png)

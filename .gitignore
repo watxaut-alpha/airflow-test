@@ -110,3 +110,7 @@ venv.bak/
 
 # pwds from secret
 .config/secret.py
+
+# ignore logs from airflow (for now)
+# TODO: Double check if this is right
+.airflow-home/logs/

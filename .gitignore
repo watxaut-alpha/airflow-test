@@ -109,8 +109,5 @@ venv.bak/
 .idea/
 
 # pwds from secret
-.config/secret.py
+.dags_test/config/secret.py
 
-# ignore logs from airflow (for now)
-# TODO: Double check if this is right
-.airflow-home/logs/

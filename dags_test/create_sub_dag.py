@@ -1,5 +1,5 @@
 # main_dag.py
-from datetime import datetime, timedelta
+from datetime import datetime
 from airflow.models import DAG
 from airflow.operators.subdag_operator import SubDagOperator
 from airflow.operators.dummy_operator import DummyOperator

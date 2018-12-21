@@ -1,8 +1,83 @@
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.dummy_operator import DummyOperator
+from airflow.operators.mysql_operator import MySqlOperator
 
+import copy
+
+import config.globvars as globvars
 import db.core as db_core
+
+
+def dag_constructor(dag_name, default_args, **kwargs):
+    """
+    Create and return DAG with the usual arguments
+    :param dag_name: name of your dag
+    :type dag_name: str
+    :param default_args: default args for DAG. Will update the ones in globvars.default_args
+    :type default_args: dict
+    :param kwargs: additional keyword arguments for DAG
+    :return: DAG object
+    """
+
+    # get the default args from globvars. If default_args is something, update the values, if not, get the default ones
+    dag_args = copy.deepcopy(globvars.default_args)
+    dag_args.update(default_args)
+
+    # init DAG. The name is important! As it is the one that will figure out in the Flask web page
+    # catchup = False -> will NOT create a dag run for each time it should have started from start_date
+    dag = DAG(dag_name, default_args=dag_args, **kwargs)
+
+    return dag
+
+
+def get_python_operators_el(dag, conn_id_source, conn_id_destination, l_tables, db_version,
+                            s_process="extract_and_load", load_all=False):
+    d_ops = {}
+
+    for table in l_tables:
+        if type(table) == dict:
+            table_id = table["table_id"] if "table_id" in table.keys() else table["table_name_source"]
+            table_name_source = table["table_name_source"]
+            table_name_destination = table["table_name_destination"]
+            l_columns_exclude = table["l_columns_exclude"] if "l_columns_exclude" in table.keys() else []
+            operation_type = table["operation_type"] if "operation_type" in table.keys() else None
+            query_type = table["query_type"] if "query_type" in table.keys() else None
+        else:  # String
+            table_id = table
+            table_name_source = table
+            table_name_destination = table
+            l_columns_exclude = []  # all columns
+            operation_type = None
+            columns_tz = None
+            query_type = None
+
+        s_task_id_name = '{}_{}'.format(s_process, table_id)
+
+        sql_query_params = {"table_id": table_id, "table_name_source": table_name_source,
+                            "table_name_destination": table_name_destination,
+                            "l_columns_exclude": l_columns_exclude, "operation_type": operation_type,
+                            "columns_tz": columns_tz, "query_type": query_type, "db_version": db_version}
+
+        op_el = PythonOperator(
+            task_id=s_task_id_name,
+            op_kwargs={"conn_id_source": conn_id_source, "conn_id_destination": conn_id_destination,
+                       "sql_query_params": sql_query_params, "load_all": load_all},
+            python_callable=db_core.extract_load_table,
+            dag=dag)
+
+        d_ops[table_id] = op_el
+
+    return d_ops
+
+
+def get_mysql_operator(dag, task_id, conn_id, sql_query):
+    return MySqlOperator(
+        task_id=task_id,
+        mysql_conn_id=conn_id,
+        sql=sql_query,
+        dag=dag
+    )
 
 
 def dag_el(dag_name, conn_id_source, conn_id_dest, l_tables, default_args, **kwargs):

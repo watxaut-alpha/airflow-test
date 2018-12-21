@@ -1,16 +1,5 @@
 from datetime import datetime, timedelta
 
-tables_test = [
-    "customers",
-    "employees",
-    "offices",
-    "orderdetails",
-    "orders",
-    "payments",
-    "productlines",
-    "products"
-]
-
 # Airflow's DAG default arguments for DAG. You can see a complete list
 # here: https://airflow.apache.org/code.html#airflow.models.BaseOperator
 default_args = {

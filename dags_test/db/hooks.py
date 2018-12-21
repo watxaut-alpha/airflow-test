@@ -160,6 +160,7 @@ class MyMysqlHook(MySqlHook):
         """
         Returns an iterable of pandas DF with size chunksize
 
+        :param id_col:
         :param chunksize: Number of rows to fit in one chunk. If there is more rows than chunksize, pandas will return
                             an iterator with rows=chunksize until no more rows are selected in the query
         :type chunksize: int
@@ -173,7 +174,18 @@ class MyMysqlHook(MySqlHook):
             sql = sql.encode('utf-8')
         import pandas.io.sql as psql
 
+        # trying new self made iterator
+        offset = 0
         with closing(self.get_conn()) as conn:
-            return psql.read_sql(sql, con=conn, params=parameters, chunksize=chunksize)
-
+            while True:
+                aux_sql = sql + " LIMIT {offset}, {chunksize}".format(offset=offset, chunksize=chunksize)
+                logging.info("Executing query: '{}'".format(aux_sql))
+                result = psql.read_sql(aux_sql, con=conn, params=parameters)
+                # result.index = range(offset, offset+len(result))
+                logging.info("Pandas dataframe length: '{}'".format(len(result)))
+                if len(result) != 0:
+                    yield result
+                else:
+                    raise StopIteration
+                offset += chunksize
 
